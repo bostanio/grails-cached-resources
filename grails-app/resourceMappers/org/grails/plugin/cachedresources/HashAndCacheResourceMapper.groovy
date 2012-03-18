@@ -3,6 +3,7 @@ package org.grails.plugin.cachedresources
 import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.grails.plugin.cachedresources.util.Base62
 import org.grails.plugin.resource.mapper.MapperPhase
+import org.apache.commons.io.FilenameUtils
 
 class HashAndCacheResourceMapper {
 
@@ -20,7 +21,8 @@ class HashAndCacheResourceMapper {
             log.debug "Hashing resources to unique names..."
         }
 
-        resource.processedFile = renameToHashOfContents(resource.processedFile, resource.processedFileExtension)
+        def filename = FilenameUtils.getBaseName(resource.processedFile.name)
+        resource.processedFile = renameToHashOfContents(resource.processedFile, filename, resource.processedFileExtension)
         resource.updateActualUrlFromProcessedFile()
         
         // Do all the horrible cache header stuff
@@ -59,18 +61,29 @@ class HashAndCacheResourceMapper {
     boolean getFlattenDirs() {
         resourceService.getConfigParamOrDefault('flatten', true)
     }
+
+    boolean getKeepFilename() {
+        resourceService.getConfigParamOrDefault('keepFilename', false)
+    }
     
     /**
      * Renames the given input file in the same directory to be the SHA256 hash of it's contents.
      */
-    def renameToHashOfContents(File input, String extension) {
-        def newName
+    def renameToHashOfContents(File input, String filename, String extension) {
+        def nameHash
         if (shortenLinks) {
             def hash = SHA256BytesCodec.encode(getBytes(input))
-            newName = Base62.encode(hash)
+            nameHash = Base62.encode(hash)
         } else {
-            newName = SHA256Codec.encode(getBytes(input))
+            nameHash = SHA256Codec.encode(getBytes(input))
         }
+        def newName
+        if (keepFilename) {
+            newName = "${filename}_${nameHash}"
+        } else {
+            newName = nameHash
+        }
+
         def parent = flattenDirs ? resourceService.workDir : input.parentFile
         def target = new File(parent, extension ? "${newName}.${extension}" : newName)
 
