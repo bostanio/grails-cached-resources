@@ -1,9 +1,8 @@
 class CachedResourcesGrailsPlugin {
-    def version = "1.0"
+    def version = "1.2"
 
     def grailsVersion = "1.2 > *"
     // the other plugins this plugin depends on
-    def dependsOn = [resources:'1.0.RC3 > *', cacheHeaders:'1.0.4 > *']
     def loadAfter = ['resources']
     
     // resources that are excluded from plugin packaging
@@ -13,8 +12,8 @@ class CachedResourcesGrailsPlugin {
             "web-app/js/**/*.*"
     ]
 
-    def author = "Marc Palmer"
-    def authorEmail = "marc@grailsrocks.com"
+    def developers = [ [name: "Marc Palmer", email: "marc@grailsrocks.com"] ]
+    
     def title = "Cached Resources"
     def description = '''\\
 Makes static resources browser-cacheable with unique filenames based on their content
